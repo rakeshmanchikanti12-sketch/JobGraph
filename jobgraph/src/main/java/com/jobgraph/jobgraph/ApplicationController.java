@@ -17,7 +17,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/applications")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {
+    "http://localhost:5173",
+    "https://job-graph-frontend.vercel.app"
+})
 public class ApplicationController {
 
     private final Driver driver;
@@ -37,49 +40,35 @@ public class ApplicationController {
 
         if (name == null || name.isBlank()) {
             return ResponseEntity.badRequest().body(
-                    Map.of(
-                            "message",
-                            "Name is required"
-                    )
+                    Map.of("message", "Name is required")
             );
         }
 
         if (email == null || email.isBlank()) {
             return ResponseEntity.badRequest().body(
-                    Map.of(
-                            "message",
-                            "Email is required"
-                    )
+                    Map.of("message", "Email is required")
             );
         }
 
         if (jobTitle == null || jobTitle.isBlank()) {
             return ResponseEntity.badRequest().body(
-                    Map.of(
-                            "message",
-                            "Job title is required"
-                    )
+                    Map.of("message", "Job title is required")
             );
         }
 
         if (location == null || location.isBlank()) {
             return ResponseEntity.badRequest().body(
-                    Map.of(
-                            "message",
-                            "Location is required"
-                    )
+                    Map.of("message", "Location is required")
             );
         }
 
         try (Session session = driver.session()) {
 
-            // Step 1: Check whether the job exists
             String jobQuery = """
                     MATCH (j:Job {
                         title: $jobTitle,
                         location: $location
                     })
-
                     RETURN j
                     """;
 
@@ -94,25 +83,20 @@ public class ApplicationController {
             if (!jobResult.hasNext()) {
                 return ResponseEntity.badRequest().body(
                         Map.of(
-                                "message",
-                                "Job not found",
-                                "jobTitle",
-                                jobTitle,
-                                "location",
-                                location
+                                "message", "Job not found",
+                                "jobTitle", jobTitle,
+                                "location", location
                         )
                 );
             }
 
             jobResult.consume();
 
-            // Step 2: Check for duplicate application
             String duplicateQuery = """
                     MATCH (a:Application)-[:APPLIED_FOR]->(j:Job)
                     WHERE a.email = $email
                       AND j.title = $jobTitle
                       AND j.location = $location
-
                     RETURN a.applicationId AS applicationId,
                            a.status AS status
                     ORDER BY a.appliedAt DESC
@@ -144,8 +128,7 @@ public class ApplicationController {
                                 "message",
                                 "You have already applied for this job.",
                                 "applicationId",
-                                existing.get("applicationId")
-                                        .asString(),
+                                existing.get("applicationId").asString(),
                                 "jobTitle",
                                 jobTitle,
                                 "location",
@@ -156,7 +139,6 @@ public class ApplicationController {
                 );
             }
 
-            // Step 3: Create new application
             String createQuery = """
                     MATCH (j:Job {
                         title: $jobTitle,
@@ -212,30 +194,24 @@ public class ApplicationController {
                             "Application saved successfully",
 
                             "applicationId",
-                            record.get("applicationId")
-                                    .asString(),
+                            record.get("applicationId").asString(),
 
                             "name",
-                            record.get("name")
-                                    .asString(),
+                            record.get("name").asString(),
 
                             "email",
                             cleanEmail(
-                                    record.get("email")
-                                            .asString()
+                                    record.get("email").asString()
                             ),
 
                             "jobTitle",
-                            record.get("jobTitle")
-                                    .asString(),
+                            record.get("jobTitle").asString(),
 
                             "location",
-                            record.get("location")
-                                    .asString(),
+                            record.get("location").asString(),
 
                             "status",
-                            record.get("status")
-                                    .asString()
+                            record.get("status").asString()
                     )
             );
 
@@ -292,34 +268,28 @@ public class ApplicationController {
 
                 return Map.of(
                         "applicationId",
-                        record.get("applicationId")
-                                .asString(),
+                        record.get("applicationId").asString(),
 
                         "name",
-                        record.get("name")
-                                .asString(),
+                        record.get("name").asString(),
 
                         "email",
                         email,
 
                         "jobTitle",
-                        record.get("jobTitle")
-                                .asString(),
+                        record.get("jobTitle").asString(),
 
                         "location",
-                        record.get("location")
-                                .asString(),
+                        record.get("location").asString(),
 
                         "status",
                         status,
 
                         "appliedAt",
-                        record.get("appliedAt")
-                                .toString(),
+                        record.get("appliedAt").toString(),
 
                         "salary",
-                        record.get("salary")
-                                .asString()
+                        record.get("salary").asString()
                 );
             });
 
@@ -434,30 +404,24 @@ public class ApplicationController {
                             "Application status updated successfully",
 
                             "applicationId",
-                            record.get("applicationId")
-                                    .asString(),
+                            record.get("applicationId").asString(),
 
                             "name",
-                            record.get("name")
-                                    .asString(),
+                            record.get("name").asString(),
 
                             "email",
                             cleanEmail(
-                                    record.get("email")
-                                            .asString()
+                                    record.get("email").asString()
                             ),
 
                             "jobTitle",
-                            record.get("jobTitle")
-                                    .asString(),
+                            record.get("jobTitle").asString(),
 
                             "location",
-                            record.get("location")
-                                    .asString(),
+                            record.get("location").asString(),
 
                             "status",
-                            record.get("status")
-                                    .asString()
+                            record.get("status").asString()
                     )
             );
 
