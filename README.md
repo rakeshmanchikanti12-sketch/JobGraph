@@ -1,16 +1,129 @@
-# React + Vite
+# JobGraph
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+JobGraph is a full stack job application platform built with React, Spring Boot, and CognoDB. It helps users search and filter jobs, apply for jobs, prevent duplicate applications, view application history, and manage application status through an admin dashboard.
 
-Currently, two official plugins are available:
+## Technology Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React
+- Vite
+- Spring Boot
+- Java
+- CognoDB
+- openCypher
+- Neo4j Java Driver
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Job search and filtering
+- Job recommendations
+- Job application submission
+- Duplicate application prevention
+- Application history
+- Admin dashboard
+- Application status management
+- Graph database integration
 
-## Expanding the ESLint configuration
+## Why a Graph Database?
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+JobGraph uses CognoDB to represent relationships between candidates, jobs, skills, and applications.
+
+A graph model makes relationship based queries easier, such as finding jobs related to candidate skills and traversing multiple relationships between candidates, applications, jobs, and skills.
+
+## Data Model
+
+Candidate
+  |
+  | APPLIED_FOR
+  v
+Application
+  |
+  | FOR_JOB
+  v
+Job
+  |
+  | REQUIRES
+  v
+Skill
+
+Candidate
+  |
+  | HAS_SKILL
+  v
+Skill
+
+## Project Structure
+
+- React frontend
+- Spring Boot backend
+- CognoDB graph database
+- Cypher queries
+- Seed data loader
+
+## Database
+
+The application uses CognoDB through the official Neo4j Java driver.
+
+Database credentials are loaded through environment variables.
+
+Required environment variables:
+
+COGNODB_URI=your_cognodb_uri
+COGNODB_USERNAME=your_username
+COGNODB_PASSWORD=your_password
+
+Do not commit real database credentials to GitHub.
+
+## Running the Backend
+
+Open the backend project in Eclipse or another Java IDE.
+
+Configure the required environment variables.
+
+Run:
+
+JobgraphApplication.java
+
+## Running the Frontend
+
+Open the frontend project in a terminal.
+
+Install dependencies:
+
+npm install
+
+Start the development server:
+
+npm run dev
+
+Open the URL shown by Vite.
+
+## Graph Queries
+
+The application uses parameterized Cypher queries through the Neo4j driver.
+
+The queries support job search, applications, duplicate application prevention, application history, and admin status management.
+
+## Seed Data
+
+SeedDataLoader.java loads initial job and related graph data into CognoDB.
+
+## Admin Dashboard
+
+The admin dashboard displays:
+
+- Total jobs
+- Total applications
+- Applied applications
+- Shortlisted applications
+- Rejected applications
+- Selected applications
+
+Administrators can update application status from the dashboard.
+
+## Project Screenshots
+
+Screenshots of the application interface and admin dashboard are included in the repository.
+
+## Author
+
+Rakesh Manchikanti
