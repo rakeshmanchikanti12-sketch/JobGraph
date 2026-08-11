@@ -5,7 +5,7 @@ import org.neo4j.driver.Driver;
 import org.neo4j.driver.GraphDatabase;
 import org.neo4j.driver.Session;
 
-public class DatabaseTest {
+public class SeedDataLoader {
 
     public static void main(String[] args) {
 
