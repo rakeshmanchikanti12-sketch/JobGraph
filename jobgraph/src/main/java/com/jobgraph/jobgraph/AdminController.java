@@ -13,7 +13,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/admin")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {
+        "http://localhost:5173",
+        "https://job-graph-frontend.vercel.app"
+})
 public class AdminController {
 
     private final Driver driver;
@@ -29,10 +32,12 @@ public class AdminController {
                 MATCH (a:Application)-[:APPLIED_FOR]->(j:Job)
 
                 RETURN
+                    a.applicationId AS applicationId,
                     a.name AS name,
                     a.email AS email,
                     a.jobTitle AS jobTitle,
                     a.location AS location,
+                    a.status AS status,
                     a.appliedAt AS appliedAt,
                     j.salary AS salary
 
@@ -45,13 +50,36 @@ public class AdminController {
 
             var applications = result.list(record -> {
 
+                String status = "Applied";
+
+                if (!record.get("status").isNull()) {
+                    status = record.get("status").asString();
+                }
+
                 return Map.of(
-                        "name", record.get("name").asString(),
-                        "email", record.get("email").asString(),
-                        "jobTitle", record.get("jobTitle").asString(),
-                        "location", record.get("location").asString(),
-                        "appliedAt", record.get("appliedAt").toString(),
-                        "salary", record.get("salary").asString()
+                        "applicationId",
+                        record.get("applicationId").asString(),
+
+                        "name",
+                        record.get("name").asString(),
+
+                        "email",
+                        record.get("email").asString(),
+
+                        "jobTitle",
+                        record.get("jobTitle").asString(),
+
+                        "location",
+                        record.get("location").asString(),
+
+                        "status",
+                        status,
+
+                        "appliedAt",
+                        record.get("appliedAt").toString(),
+
+                        "salary",
+                        record.get("salary").asString()
                 );
             });
 
@@ -63,8 +91,11 @@ public class AdminController {
 
             return ResponseEntity.internalServerError().body(
                     Map.of(
-                            "message", "Failed to load admin applications",
-                            "error", e.getMessage()
+                            "message",
+                            "Failed to load admin applications",
+
+                            "error",
+                            e.getMessage()
                     )
             );
         }
@@ -92,15 +123,22 @@ public class AdminController {
                     session.run(totalJobsQuery).single();
 
             long totalApplications =
-                    applicationsResult.get("totalApplications").asLong();
+                    applicationsResult
+                            .get("totalApplications")
+                            .asLong();
 
             long totalJobs =
-                    jobsResult.get("totalJobs").asLong();
+                    jobsResult
+                            .get("totalJobs")
+                            .asLong();
 
             return ResponseEntity.ok(
                     Map.of(
-                            "totalApplications", totalApplications,
-                            "totalJobs", totalJobs
+                            "totalApplications",
+                            totalApplications,
+
+                            "totalJobs",
+                            totalJobs
                     )
             );
 
@@ -110,8 +148,11 @@ public class AdminController {
 
             return ResponseEntity.internalServerError().body(
                     Map.of(
-                            "message", "Failed to load statistics",
-                            "error", e.getMessage()
+                            "message",
+                            "Failed to load statistics",
+
+                            "error",
+                            e.getMessage()
                     )
             );
         }
