@@ -7,12 +7,14 @@ import org.neo4j.driver.Session;
 import org.neo4j.driver.Values;
 
 import org.springframework.http.ResponseEntity;
+
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -127,12 +129,16 @@ public class ApplicationController {
                         Map.of(
                                 "message",
                                 "You have already applied for this job.",
+
                                 "applicationId",
                                 existing.get("applicationId").asString(),
+
                                 "jobTitle",
                                 jobTitle,
+
                                 "location",
                                 location,
+
                                 "status",
                                 existingStatus
                         )
@@ -223,6 +229,7 @@ public class ApplicationController {
                     Map.of(
                             "message",
                             "Failed to save application",
+
                             "error",
                             e.getMessage()
                     )
@@ -231,10 +238,21 @@ public class ApplicationController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getApplications() {
+    public ResponseEntity<?> getApplications(
+            @RequestParam String email) {
+
+        String cleanUserEmail = cleanEmail(email);
+
+        if (cleanUserEmail.isBlank()) {
+            return ResponseEntity.badRequest().body(
+                    Map.of("message", "Email is required")
+            );
+        }
 
         String query = """
                 MATCH (a:Application)-[:APPLIED_FOR]->(j:Job)
+
+                WHERE toLower(a.email) = toLower($email)
 
                 RETURN
                     a.applicationId AS applicationId,
@@ -251,19 +269,23 @@ public class ApplicationController {
 
         try (Session session = driver.session()) {
 
-            var result = session.run(query);
+            var result = session.run(
+                    query,
+                    Values.parameters(
+                            "email", cleanUserEmail
+                    )
+            );
 
             var applications = result.list(record -> {
 
-                String email = cleanEmail(
+                String applicationEmail = cleanEmail(
                         record.get("email").asString()
                 );
 
                 String status = "Applied";
 
                 if (!record.get("status").isNull()) {
-                    status =
-                            record.get("status").asString();
+                    status = record.get("status").asString();
                 }
 
                 return Map.of(
@@ -274,7 +296,7 @@ public class ApplicationController {
                         record.get("name").asString(),
 
                         "email",
-                        email,
+                        applicationEmail,
 
                         "jobTitle",
                         record.get("jobTitle").asString(),
@@ -303,6 +325,7 @@ public class ApplicationController {
                     Map.of(
                             "message",
                             "Failed to load applications",
+
                             "error",
                             e.getMessage()
                     )
@@ -350,6 +373,7 @@ public class ApplicationController {
                     Map.of(
                             "message",
                             "Invalid status",
+
                             "allowedStatuses",
                             "Applied, Shortlisted, Rejected, Selected"
                     )
@@ -433,6 +457,7 @@ public class ApplicationController {
                     Map.of(
                             "message",
                             "Failed to update application status",
+
                             "error",
                             e.getMessage()
                     )
